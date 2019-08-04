@@ -29,8 +29,8 @@
 			},
 			{
 				"command": "esp-engine.flash",
-				"key": "ctrl+shift+alt+f",
-				"mac": "cmd+shift+alt+f"
+				"key": "ctrl+shift+alt+x",
+				"mac": "cmd+shift+alt+x"
 			},
 			{
 				"command": "esp-engine.clean",
