@@ -2,7 +2,7 @@
 	"name": "esp-engine",
 	"displayName": "ESP-Engine",
 	"description": "ESP-IDF Development Engine for Microsoft's Code Editor VSCode.",
-	"version": "0.0.1",
+	"version": "0.2",
 	"engines": {
 		"vscode": "^1.36.0"
 	},
