@@ -20,8 +20,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Initiating Directory as ESP-IDF project ...');
 		engine_terminal = vscode.window.createTerminal('esp-Init');
 		if(vscode.workspace.findFiles('CMakeLists.txt')){
-			engine_terminal.sendText('$loc = Get-location', true);
-			engine_terminal.sendText('Remove-Item $loc/* -Force -Recurse', true);
+			// engine_terminal.sendText('$loc = Get-location', true);
+			// engine_terminal.sendText('Remove-Item $loc/* -Force -Recurse', true);
 			engine_terminal.sendText('mkdir /esp-engine/', true);
 			engine_terminal.sendText('Invoke-WebRequest -Uri ' + template_uri + " -Outfile " + template_location, true);
 			engine_terminal.sendText('Expand-Archive ' + template_location + " $loc\\esp-engine\\temp\\", true);
@@ -40,7 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log("'CMakeLists.txt' file is present, initiating build.");
 			engine_terminal = vscode.window.createTerminal("esp-build");
 			vscode.workspace.saveAll();
-			vscode.window.showInformationMessage("Project Compilation Initiated.")
+			vscode.window.showInformationMessage("Project Compilation Initiated.");
 			engine_terminal.sendText("python $env:IDF_PATH/tools/idf.py build", true);
 			engine_terminal.show();
 		}
@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage("Cleaning built files.");
 			engine_terminal.sendText("python $env:IDF_PATH/tools/idf.py clean", true);
 			engine_terminal.dispose();
-			vscode.window.showInformationMessage("We've cleaned the built files.s")
+			vscode.window.showInformationMessage("We've cleaned the built files.s");
 		}
 	});
 	context.subscriptions.push(clean_command);
