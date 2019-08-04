@@ -6,7 +6,7 @@ All notable changes to the "ESP-Engine" extension will be documented in this fil
 
 - Unreleased features include automatic toolchain setup and ESP-IDF cloning. These features are in pipeline for future updates.
 
-## [Beta Release v0.2]
+## [Beta Release v0.0.1]
 
 - Initial release, Contains basic features such as,
 

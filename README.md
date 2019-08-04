@@ -31,7 +31,7 @@ git clone -b v3.2.2 --recursive https://github.com/espressif/esp-idf.git
 
 No major known issues, kindly post issues you find at the github Repository.
 
-### Beta Release v0.2
+### Beta Release v0.0.1
 
 Initial release of ESP-Engine.
 Contains all basic commands ESP-IDF development (namely Build, Flash, Clean, Monitor, Menuconfig).
