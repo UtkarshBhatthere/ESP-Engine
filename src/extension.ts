@@ -49,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 			engine_terminal.show();
 			vscode.window.showInformationMessage("Terminal size should be atleast 19 Lines by 80 Columns");
 			engine_terminal.sendText("python $env:IDF_PATH/tools/idf.py menuconfig", true);
+			
 		}
 	});
 	context.subscriptions.push(menuconfig_command);
@@ -65,12 +66,20 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(clean_command);
 
 	// Flash command
-	let flash_command = vscode.commands.registerCommand('esp-engine.flash', function(){
+	let flash_command = vscode.commands.registerCommand('esp-engine.flash', async function(){
 		if(activity_status){
 			// engine_terminal = vscode.window.createTerminal("esp-flash");
 			vscode.window.showInformationMessage("Flashing Target", );
-			engine_terminal.show();
-			engine_terminal.sendText("python $env:IDF_PATH/tools/idf.py flash", true);
+			let baudrate = await vscode.window.showInputBox({
+				prompt: "Specify Baudrate.",
+				value: "115200"
+			});
+			let port = await vscode.window.showInputBox({
+				prompt: "Specify Port Address.",
+				value: "COM10"
+			});
+			await engine_terminal.show();
+			await engine_terminal.sendText("python $env:IDF_PATH/tools/idf.py -p " + port + " -b " + baudrate + " flash", true);
 		}
 	});
 	context.subscriptions.push(flash_command);
