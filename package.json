@@ -1,6 +1,6 @@
 {
 	"name": "esp-engine",
-	"displayName": "esp-engine",
+	"displayName": "ESP-Engine",
 	"description": "ESP-IDF Development Engine for Microsoft's Code Editor VSCode.",
 	"version": "0.0.1",
 	"engines": {
@@ -10,34 +10,77 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:esp-engine.initiate"
+		"onCommand:esp-engine.initiate",
+		"onCommand:esp-engine.build",
+		"onCommand:esp-engine.flash",
+		"onCommand:esp-engine.clean",
+		"onCommand:esp-engine.config",
+		"onCommand:esp-engine.monitor",
+		"onLanguage:c",
+		"onLanguage:cpp"		
 	],
-	"main": "./out/esp-engine.js",
+	"main": "./out/extension.js",
 	"contributes": {
-		"commands": [
-			{
-				"command": "esp-engine.initialise",
-				"title": "ESP_ENGINE : Init Directory (Initialise)"
-			},
+		"keybindings":[
 			{
 				"command": "esp-engine.build",
-				"title": "ESP_ENGINE : Build Project (Build)"
-			},
-			{
-				"command": "esp-engine.clean",
-				"title": "ESP_ENGINE : Delete Built Files (Clean)"
+				"key": "ctrl+shift+alt+b",
+				"mac": "cmd+shift+alt+b"
 			},
 			{
 				"command": "esp-engine.flash",
-				"title": "ESP_ENGINE : Flash Target Device (Flash)"
+				"key": "ctrl+shift+alt+f",
+				"mac": "cmd+shift+alt+f"
+			},
+			{
+				"command": "esp-engine.clean",
+				"key": "ctrl+shift+alt+c",
+				"mac": "cmd+shift+alt+c"
+			},
+			{
+				"command": "esp-engine.monitor",
+				"key": "ctrl+shift+alt+m",
+				"mac": "cmd+shift+alt+m"
 			},
 			{
 				"command": "esp-engine.config",
-				"title": "ESP_ENGINE : Config Project Settings (Menuconfig)"
+				"key": "ctrl+shift+alt+z",
+				"mac": "cmd+shift+alt+z"
+			},
+			{
+				"command": "esp-engine.initiate",
+				"key": "ctrl+shift+alt+i",
+				"mac": "cmd+shift+alt+i"
+			}
+		],
+		"commands": [
+			{
+				"command": "esp-engine.initiate",
+				"title": "ESP-Engine : Initialise your Directory as ESP-IDF project."
+			},
+			{
+				"command": "esp-engine.build",
+				"title": "ESP-Engine : Build Binaries (Build)"
+			},
+			{
+				"command": "esp-engine.flash",
+				"title": "ESP-Engine : Flash Binaries to Target Device (Flash)"
+			},
+			{
+				"command": "esp-engine.clean",
+				"title": "ESP-Engine : Clean Built files. (Clean)"
+			},
+			{
+				"command": "esp-engine.monitor",
+				"title": "ESP-Engine : Launch Serial Debugger. (Monitor)"
+			},
+			{
+				"command": "esp-engine.config",
+				"title": "ESP-Engine : Launch Project Config Menu. (Menuconfig)"
 			},
 			{
 				"command": "esp-engine.setup",
-				"title": "ESP_ENGINE : Setup Toolchain (Setup)"
+				"title": "ESP-Engine : Setup ESP Development Environment."
 			}
 		]
 	},
