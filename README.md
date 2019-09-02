@@ -6,7 +6,7 @@ Addressing the aggressive use of terminal based commands required for working wi
 
 ## Features
 
-The ESP-Engine contains following Commands:
+The ESP-Engine contains following Commands (Use CTRL+Shift+P to check key Bindings for your system) :
 
 * `ESP-Engine.Initiate`: Convert current working directory to template IDF project.
 * `ESP-Engine.Build`: Compile the whole project and generate Bin files for flashing.
