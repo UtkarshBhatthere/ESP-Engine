@@ -21,11 +21,11 @@
 		"onCommand:esp-engine.config",
 		"onCommand:esp-engine.monitor",
 		"onLanguage:c",
-		"onLanguage:cpp"		
+		"onLanguage:cpp"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
-		"keybindings":[
+		"keybindings": [
 			{
 				"command": "esp-engine.build",
 				"key": "ctrl+shift+alt+b",
@@ -105,5 +105,10 @@
 		"typescript": "^3.3.1",
 		"tslint": "^5.12.1",
 		"vscode-test": "^1.0.2"
+	},
+	"dependencies": {
+		"@types/fs-extra": "^8.0.0",
+		"compressing": "^1.4.0",
+		"fs-extra": "^8.1.0"
 	}
 }
