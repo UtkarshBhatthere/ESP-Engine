@@ -5,7 +5,7 @@ import * as https from 'https';
 import * as path from 'path';
 import * as url from 'url';
 import * as vscode from 'vscode';
-import * as fs from "fs-extra";
+import * as fs from "fs";
 function download(urlstring: string, stream: fs.WriteStream) {
 	return new Promise((resolve, rejects) => {
 		let urlload = url.parse(urlstring);
@@ -43,44 +43,36 @@ function ungzip(src: string, dir: string) {
 		});
 	});
 }
-function getallfilepath(rootpath: string) {
-	fs.readdir(rootpath, (err, files) => {
-		if (err) {
-			console.log(err);
-		}
-		files.forEach((val, key) => {
-			if (fs.statSync(val).isFile()) {
-				fs.move(path.resolve(rootpath, "esp-idf-template-master", val), path.resolve(rootpath, val)).finally(() => {
-				});
+function movefiles(srcdir: string, destdir: string) {
+	return new Promise((resolve, rejects) => {
+		console.log(srcdir);
+		 fs.readdir(srcdir, { withFileTypes: true }, (err, files) => {
+			console.log(files.length);
+			if (err) {
+				rejects(err);
 			}
-			else {
-			}
-		});
+			 let i = 0;
+			 files.sort();
+			 files.forEach(element => {
+				i += 1;
+				console.log(i+element.name);
+				if (element.isDirectory()) {
+					let childdir = path.resolve(srcdir, element.name);
+					let newchilddir = path.resolve(destdir, element.name);
+					fs.mkdir(newchilddir, (err) => rejects(err));
+					movefiles(childdir, newchilddir);
+				} else {
+					let srcfile = path.resolve(srcdir, element.name);
+					let destfile = path.resolve(destdir, element.name);
+					fs.copyFileSync(srcfile, destfile);
+					fs.unlinkSync(srcfile);
+					resolve(srcdir);
+				}
+			});
+		 });
+
 	});
-}
-function movefiles(rootpath: string) {
-	fs.readdir(rootpath, (err, files) => {
-		if (err) {
-			console.log(err);
-		}
-		let index = files.indexOf("esp-idf-template-master");
-		if (index !== undefined) {
-			console.log(files[index]);
-			let allfilepath = path.resolve(rootpath, "esp-idf-template-master");
-			getallfilepath(allfilepath);
 
-
-			// items.forEach(element => {
-			// 	console.log(path.resolve(rootpath, "esp-idf-template-master", element));
-			// 	fs.moveSync(path.resolve(rootpath, "esp-idf-template-master", element),
-			// 		path.resolve(rootpath, element));
-			// });
-
-		}
-		else {
-			console.log("can't find floader");
-		}
-	});
 }
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -109,10 +101,21 @@ export function activate(context: vscode.ExtensionContext) {
 		if (vscode.workspace.workspaceFolders) {
 			let rootpath = path.normalize(vscode.workspace.workspaceFolders[0].uri.fsPath);
 			let zipfliepath = path.resolve(rootpath, zipfilename);
-			let writer = fs.createWriteStream(zipfliepath);
-			await download(zipfileurl, writer);
-			await ungzip(zipfliepath, rootpath);
-			movefiles(rootpath);
+			let allfilepath = path.resolve(rootpath, "esp-idf-template-master");
+			// let writer = fs.createWriteStream(zipfliepath);
+			// await download(zipfileurl, writer).catch(err => {
+			// 	console.log('unzip err');
+			// 	console.log(err);
+			// });
+			await ungzip(zipfliepath, rootpath).catch((err) => {
+				console.log('unzip err');
+				console.log(err);
+			});
+			await movefiles(allfilepath, rootpath).catch(err => {
+				console.log('movefiles err');
+				console.log(err);
+			});
+
 		} else {
 			vscode.window.showInformationMessage('Please open a floader');
 		}
