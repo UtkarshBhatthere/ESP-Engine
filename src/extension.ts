@@ -13,7 +13,6 @@ function download(urlstring: string, stream: fs.WriteStream) {
 			resolve();
 		});
 		https.get(urlload, (res) => {
-			console.log('statusCode :' + res.statusCode);
 			if (res.statusCode === 302) {
 				if (res.headers['location']) {
 					download(res.headers['location'], stream);
@@ -27,7 +26,7 @@ function download(urlstring: string, stream: fs.WriteStream) {
 	});
 }
 
-function ungzip(src: string, dir: string) {
+function unzip(src: string, dir: string) {
 	return new Promise((resolve, rejects) => {
 		fs.stat(src, (err, stats) => {
 			if (err) {
@@ -43,37 +42,41 @@ function ungzip(src: string, dir: string) {
 		});
 	});
 }
-function movefiles(srcdir: string, destdir: string) {
-	return new Promise((resolve, rejects) => {
-		console.log(srcdir);
-		 fs.readdir(srcdir, { withFileTypes: true }, (err, files) => {
-			console.log(files.length);
-			if (err) {
-				rejects(err);
-			}
-			 let i = 0;
-			 files.sort();
-			 files.forEach(element => {
-				i += 1;
-				console.log(i+element.name);
-				if (element.isDirectory()) {
-					let childdir = path.resolve(srcdir, element.name);
-					let newchilddir = path.resolve(destdir, element.name);
-					fs.mkdir(newchilddir, (err) => rejects(err));
-					movefiles(childdir, newchilddir);
-				} else {
-					let srcfile = path.resolve(srcdir, element.name);
-					let destfile = path.resolve(destdir, element.name);
-					fs.copyFileSync(srcfile, destfile);
-					fs.unlinkSync(srcfile);
-					resolve(srcdir);
-				}
-			});
-		 });
 
+function movefiles(srcdir: string, destdir: string) {
+	return new Promise((resolve) => {
+		let files = fs.readdirSync(srcdir, { withFileTypes: true });
+		files.sort((n1, n2) => {
+			if (n1.isFile() && n2.isDirectory()) {
+				return -1;
+			} else if (n1.isDirectory() && n2.isFile()) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
+		resolve(entrydir(files));
 	});
 
+	async function entrydir(files: fs.Dirent[]) {
+		files.forEach(async element => {
+			if (element.isDirectory()) {
+				let childdir = path.resolve(srcdir, element.name);
+				let newchilddir = path.resolve(destdir, element.name);
+				fs.mkdir(newchilddir, err => { });
+				await movefiles(childdir, newchilddir);
+			}
+			else {
+				let srcfile = path.resolve(srcdir, element.name);
+				let destfile = path.resolve(destdir, element.name);
+				fs.copyFileSync(srcfile, destfile);
+				fs.unlinkSync(srcfile);
+			}
+		});
+		fs.rmdir(srcdir, err => { });
+	}
 }
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -96,26 +99,32 @@ export function activate(context: vscode.ExtensionContext) {
 	// Not completely implemented
 	let initiate_command = vscode.commands.registerCommand('esp-engine.initiate', async function () {
 		// Init Message
-		// vscode.window.showInformationMessage('Initiating Directory as ESP-IDF project ... It will take a few seconds.');
+		vscode.window.showInformationMessage('Initiating Directory as ESP-IDF project ... It will take a few seconds.');
 		console.log("running!");
 		if (vscode.workspace.workspaceFolders) {
 			let rootpath = path.normalize(vscode.workspace.workspaceFolders[0].uri.fsPath);
 			let zipfliepath = path.resolve(rootpath, zipfilename);
 			let allfilepath = path.resolve(rootpath, "esp-idf-template-master");
-			// let writer = fs.createWriteStream(zipfliepath);
-			// await download(zipfileurl, writer).catch(err => {
-			// 	console.log('unzip err');
-			// 	console.log(err);
-			// });
-			await ungzip(zipfliepath, rootpath).catch((err) => {
+			let writer = fs.createWriteStream(zipfliepath);
+			await download(zipfileurl, writer).catch(err => {
+				console.log('download err');
+				console.log(err);
+			});
+			await unzip(zipfliepath, rootpath).catch((err) => {
 				console.log('unzip err');
 				console.log(err);
 			});
 			await movefiles(allfilepath, rootpath).catch(err => {
 				console.log('movefiles err');
-				console.log(err);
+				if (err.code !== 'EEXIST') {
+					console.log(err);
+				}
 			});
-
+			await fs.unlink(zipfliepath, err => {//delate the .zip file
+				if (err) {
+					console.log(err);
+				}
+			});
 		} else {
 			vscode.window.showInformationMessage('Please open a floader');
 		}
