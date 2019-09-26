@@ -1,24 +1,25 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as compressing from 'compressing';
+import * as vscode from 'vscode';
+import * as unzip from "adm-zip";
 import * as https from 'https';
 import * as path from 'path';
 import * as url from 'url';
-import * as vscode from 'vscode';
 import * as fs from "fs";
-function download(urlstring: string, stream: fs.WriteStream) {
+
+function download(urlstring: string, destdirstream: fs.WriteStream) {
 	return new Promise((resolve, rejects) => {
 		let urlload = url.parse(urlstring);
-		stream.on('close', () => {
-			resolve();
+		destdirstream.on('close', () => {
+			resolve(urlstring);
 		});
 		https.get(urlload, (res) => {
 			if (res.statusCode === 302) {
 				if (res.headers['location']) {
-					download(res.headers['location'], stream);
+					download(res.headers['location'], destdirstream);
 				}
 			} else if (res.statusCode === 200) {
-				res.pipe(stream);
+				res.pipe(destdirstream);
 			} else {
 				rejects(res.statusCode);
 			}
@@ -26,55 +27,24 @@ function download(urlstring: string, stream: fs.WriteStream) {
 	});
 }
 
-function unzip(src: string, dir: string) {
+function unzipfiles(srcfile: string, destdir: string) {
 	return new Promise((resolve, rejects) => {
-		fs.stat(src, (err, stats) => {
+		fs.stat(srcfile, (err, stats) => {
 			if (err) {
 				rejects(err);
 			}
 			if (stats.isFile()) {
-				compressing.zip.uncompress(src, dir).finally(() => {
-					resolve();
+				let zp = new unzip(srcfile);
+				let enteys = zp.getEntries();
+				enteys.forEach(val => {
+					val.entryName = val.entryName.replace('esp-idf-template-master/', '');
 				});
-			} else {
-				rejects(stats);
-			}
+				resolve(zp.extractAllTo(destdir));
+		} else {
+			rejects(stats);
+		}
 		});
 	});
-}
-
-function movefiles(srcdir: string, destdir: string) {
-	return new Promise((resolve) => {
-		let files = fs.readdirSync(srcdir, { withFileTypes: true });
-		files.sort((n1, n2) => {
-			if (n1.isFile() && n2.isDirectory()) {
-				return -1;
-			} else if (n1.isDirectory() && n2.isFile()) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
-		resolve(entrydir(files));
-	});
-
-	async function entrydir(files: fs.Dirent[]) {
-		files.forEach(async element => {
-			if (element.isDirectory()) {
-				let childdir = path.resolve(srcdir, element.name);
-				let newchilddir = path.resolve(destdir, element.name);
-				fs.mkdir(newchilddir, err => { });
-				await movefiles(childdir, newchilddir);
-			}
-			else {
-				let srcfile = path.resolve(srcdir, element.name);
-				let destfile = path.resolve(destdir, element.name);
-				fs.copyFileSync(srcfile, destfile);
-				fs.unlinkSync(srcfile);
-			}
-		});
-		fs.rmdir(srcdir, err => { });
-	}
 }
 
 // this method is called when your extension is activated
@@ -104,26 +74,14 @@ export function activate(context: vscode.ExtensionContext) {
 		if (vscode.workspace.workspaceFolders) {
 			let rootpath = path.normalize(vscode.workspace.workspaceFolders[0].uri.fsPath);
 			let zipfliepath = path.resolve(rootpath, zipfilename);
-			let allfilepath = path.resolve(rootpath, "esp-idf-template-master");
 			let writer = fs.createWriteStream(zipfliepath);
 			await download(zipfileurl, writer).catch(err => {
-				console.log('download err');
-				console.log(err);
+				console.log('download error');
+				console.log(err.statusCode);
 			});
-			await unzip(zipfliepath, rootpath).catch((err) => {
-				console.log('unzip err');
-				console.log(err);
-			});
-			await movefiles(allfilepath, rootpath).catch(err => {
-				console.log('movefiles err');
-				if (err.code !== 'EEXIST') {
-					console.log(err);
-				}
-			});
+			await unzipfiles(zipfliepath, rootpath);
 			await fs.unlink(zipfliepath, err => {//delate the .zip file
-				if (err) {
-					console.log(err);
-				}
+				if (err) {console.log(err);}
 			});
 		} else {
 			vscode.window.showInformationMessage('Please open a floader');
