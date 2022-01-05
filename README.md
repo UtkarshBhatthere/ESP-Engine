@@ -1,4 +1,4 @@
-# ESP-Engine README
+# Archived ESP-Engine: Since official extension is available from ESP, this project is archived.
 
 Addressing the aggressive use of terminal based commands required for working with ESP-IDF (and other variants such as ADF etc.) this extension is developed to create an command like interface (with Key-Binding support) to easen the development.
 
